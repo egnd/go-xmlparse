@@ -21,13 +21,14 @@ type FB2DocInfo struct {
 }
 
 // NewFB2DocInfo factory for NewFB2DocInfo.
-func NewFB2DocInfo(tokenName string, reader xml.TokenReader) (res FB2DocInfo, err error) { //nolint:gocognit,cyclop
+func NewFB2DocInfo(
+	tokenName string, reader xml.TokenReader, rules []HandlingRule,
+) (res FB2DocInfo, err error) {
 	var token xml.Token
 
-	var strVal string
+	handler := buildChain(rules, getFB2DocInfoHandler(rules))
 
-	var author FB2Author
-
+loop:
 	for {
 		if token, err = reader.Token(); err != nil {
 			if errors.Is(err, io.EOF) {
@@ -39,34 +40,45 @@ func NewFB2DocInfo(tokenName string, reader xml.TokenReader) (res FB2DocInfo, er
 
 		switch typedToken := token.(type) {
 		case xml.StartElement:
-			switch typedToken.Name.Local {
-			case "author":
-				if author, err = NewFB2Author(typedToken.Name.Local, reader); err == nil {
-					res.Authors = append(res.Authors, author)
-				}
-			case "src-url":
-				if strVal, err = GetContent(typedToken.Name.Local, reader); err == nil && strVal != "" {
-					res.SrcURL = append(res.SrcURL, strVal)
-				}
-			case "id":
-				res.ID, err = GetContent(typedToken.Name.Local, reader)
-			case "version":
-				res.Version, err = GetContent(typedToken.Name.Local, reader)
-			case "publisher":
-				if author, err = NewFB2Author(typedToken.Name.Local, reader); err == nil {
-					res.Publishers = append(res.Publishers, author)
-				}
-			}
-
-			if err != nil {
-				break
+			if err = handler(&res, typedToken, reader); err != nil {
+				break loop
 			}
 		case xml.EndElement:
 			if typedToken.Name.Local == tokenName {
-				break
+				break loop
 			}
 		}
 	}
 
 	return res, err
+}
+
+//nolint:forcetypeassert
+func getFB2DocInfoHandler(_ []HandlingRule) TokenHandler {
+	var strVal string
+
+	var author FB2Author
+
+	return func(res interface{}, node xml.StartElement, reader xml.TokenReader) (err error) {
+		switch node.Name.Local {
+		case "author":
+			if author, err = NewFB2Author(node.Name.Local, reader); err == nil {
+				res.(*FB2DocInfo).Authors = append(res.(*FB2DocInfo).Authors, author)
+			}
+		case "src-url":
+			if strVal, err = GetContent(node.Name.Local, reader); err == nil && strVal != "" {
+				res.(*FB2DocInfo).SrcURL = append(res.(*FB2DocInfo).SrcURL, strVal)
+			}
+		case "id":
+			res.(*FB2DocInfo).ID, err = GetContent(node.Name.Local, reader)
+		case "version":
+			res.(*FB2DocInfo).Version, err = GetContent(node.Name.Local, reader)
+		case "publisher":
+			if author, err = NewFB2Author(node.Name.Local, reader); err == nil {
+				res.(*FB2DocInfo).Publishers = append(res.(*FB2DocInfo).Publishers, author)
+			}
+		}
+
+		return
+	}
 }

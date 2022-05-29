@@ -13,13 +13,16 @@ import (
 type FB2File struct {
 	Description FB2Description `xml:"description"`
 	// Body        []FB2Body      `xml:"body"`
-	// Binary      []FB2Binary    `xml:"binary"`
+	Binary []FB2Binary `xml:"binary"`
 }
 
 // NewFB2File factory for FB2File.
-func NewFB2File(doc *xml.Decoder) (res FB2File, err error) {
+func NewFB2File(doc *xml.Decoder, rules ...HandlingRule) (res FB2File, err error) {
 	var token xml.Token
 
+	handler := buildChain(rules, getFB2FileHandler(rules))
+
+loop:
 	for {
 		if token, err = doc.Token(); err != nil {
 			if errors.Is(err, io.EOF) {
@@ -31,16 +34,29 @@ func NewFB2File(doc *xml.Decoder) (res FB2File, err error) {
 
 		switch typedToken := token.(type) {
 		case xml.StartElement:
-			switch typedToken.Name.Local { //nolint:gocritic
-			case "description":
-				res.Description, err = NewFB2Description(typedToken.Name.Local, doc)
-			}
-
-			if err != nil {
-				break
+			if err = handler(&res, typedToken, doc); err != nil {
+				break loop
 			}
 		}
 	}
 
 	return
+}
+
+//nolint:forcetypeassert
+func getFB2FileHandler(rules []HandlingRule) TokenHandler {
+	var binary FB2Binary
+
+	return func(res interface{}, node xml.StartElement, reader xml.TokenReader) (err error) {
+		switch node.Name.Local {
+		case "description":
+			res.(*FB2File).Description, err = NewFB2Description(node.Name.Local, reader, rules)
+		case "binary":
+			if binary, err = NewFB2Binary(node, reader); err == nil {
+				res.(*FB2File).Binary = append(res.(*FB2File).Binary, binary)
+			}
+		}
+
+		return
+	}
 }

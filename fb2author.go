@@ -24,6 +24,7 @@ func NewFB2Author(tokenName string, reader xml.TokenReader) (res FB2Author, err 
 
 	var strVal string
 
+loop:
 	for {
 		if token, err = reader.Token(); err != nil {
 			if errors.Is(err, io.EOF) {
@@ -57,11 +58,11 @@ func NewFB2Author(tokenName string, reader xml.TokenReader) (res FB2Author, err 
 			}
 
 			if err != nil {
-				break
+				break loop
 			}
 		case xml.EndElement:
 			if typedToken.Name.Local == tokenName {
-				break
+				break loop
 			}
 		}
 	}

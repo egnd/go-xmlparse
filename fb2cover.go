@@ -18,6 +18,7 @@ func NewFB2Cover(tokenName string, reader xml.TokenReader) (res FB2Cover, err er
 
 	var image FB2Image
 
+loop:
 	for {
 		if token, err = reader.Token(); err != nil {
 			if errors.Is(err, io.EOF) {
@@ -37,11 +38,11 @@ func NewFB2Cover(tokenName string, reader xml.TokenReader) (res FB2Cover, err er
 			}
 
 			if err != nil {
-				break
+				break loop
 			}
 		case xml.EndElement:
 			if typedToken.Name.Local == tokenName {
-				break
+				break loop
 			}
 		}
 	}

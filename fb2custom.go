@@ -5,7 +5,7 @@ import "encoding/xml"
 // FB2CustomInfo struct of fb2 custom info.
 // http://www.fictionbook.org/index.php/Элемент_custom-info
 type FB2CustomInfo struct {
-	IntoType string `xml:"into-type,attr"`
+	InfoType string `xml:"info-type,attr"`
 	Data     string `xml:",innerxml"`
 }
 
@@ -16,8 +16,8 @@ func NewFB2CustomInfo(token xml.StartElement, reader xml.TokenReader) (res FB2Cu
 	}
 
 	for _, attr := range token.Attr {
-		if attr.Name.Local == "into-type" {
-			res.Data = attr.Value
+		if attr.Name.Local == "info-type" {
+			res.InfoType = attr.Value
 
 			break
 		}

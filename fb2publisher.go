@@ -18,11 +18,14 @@ type FB2Publisher struct {
 }
 
 // NewFB2Publisher factory for FB2Publisher.
-func NewFB2Publisher(tokenName string, reader xml.TokenReader) (res FB2Publisher, err error) { //nolint:cyclop
+func NewFB2Publisher(
+	tokenName string, reader xml.TokenReader, rules []HandlingRule,
+) (res FB2Publisher, err error) {
 	var token xml.Token
 
-	var seq FB2Sequence
+	handler := buildChain(rules, getFB2PublisherHandler(rules))
 
+loop:
 	for {
 		if token, err = reader.Token(); err != nil {
 			if errors.Is(err, io.EOF) {
@@ -34,32 +37,41 @@ func NewFB2Publisher(tokenName string, reader xml.TokenReader) (res FB2Publisher
 
 		switch typedToken := token.(type) {
 		case xml.StartElement:
-			switch typedToken.Name.Local {
-			case "book-name":
-				res.BookName, err = GetContent(typedToken.Name.Local, reader)
-			case "publisher":
-				res.Publisher, err = GetContent(typedToken.Name.Local, reader)
-			case "city":
-				res.City, err = GetContent(typedToken.Name.Local, reader)
-			case "year":
-				res.Year, err = GetContent(typedToken.Name.Local, reader)
-			case "isbn":
-				res.ISBN, err = GetContent(typedToken.Name.Local, reader)
-			case "sequence":
-				if seq, err = NewFB2Sequence(typedToken); err == nil {
-					res.Sequence = append(res.Sequence, seq)
-				}
-			}
-
-			if err != nil {
-				break
+			if err = handler(&res, typedToken, reader); err != nil {
+				break loop
 			}
 		case xml.EndElement:
 			if typedToken.Name.Local == tokenName {
-				break
+				break loop
 			}
 		}
 	}
 
 	return res, err
+}
+
+//nolint:forcetypeassert
+func getFB2PublisherHandler(_ []HandlingRule) TokenHandler {
+	var seq FB2Sequence
+
+	return func(res interface{}, node xml.StartElement, reader xml.TokenReader) (err error) {
+		switch node.Name.Local {
+		case "book-name":
+			res.(*FB2Publisher).BookName, err = GetContent(node.Name.Local, reader)
+		case "publisher":
+			res.(*FB2Publisher).Publisher, err = GetContent(node.Name.Local, reader)
+		case "city":
+			res.(*FB2Publisher).City, err = GetContent(node.Name.Local, reader)
+		case "year":
+			res.(*FB2Publisher).Year, err = GetContent(node.Name.Local, reader)
+		case "isbn":
+			res.(*FB2Publisher).ISBN, err = GetContent(node.Name.Local, reader)
+		case "sequence":
+			if seq, err = NewFB2Sequence(node); err == nil {
+				res.(*FB2Publisher).Sequence = append(res.(*FB2Publisher).Sequence, seq)
+			}
+		}
+
+		return
+	}
 }

@@ -32,21 +32,30 @@ check-master: ## Check for latest master in current branch
 	@echo "All is OK"
 
 tests: ## Run unit tests
-	@rm -rf coverage && mkdir -p coverage
-	CGO_ENABLED=1 go test -mod=vendor -race -cover -covermode=atomic -coverprofile=coverage/profile.out ./...
+	@mkdir -p profiles
+	CGO_ENABLED=1 go test -mod=vendor -race -cover -covermode=atomic -coverprofile=profiles/cover.out.tmp ./...
 
 benchmarks: ## Run benchmarks
 	@clear
-	go test -mod=vendor -benchmem -bench . benchmarks_test.go
+	go test -mod=vendor -benchmem -bench .
 
 coverage: tests ## Check code coveragem
-	cat coverage/profile.out | grep -v "mock_" > coverage/profile.cov
-	go tool cover -func=coverage/profile.cov
-	go tool cover -html=coverage/profile.cov -o coverage/report.html
+	@cat profiles/cover.out.tmp | grep -v "mock_" > profiles/cover.out
+	go tool cover -func=profiles/cover.out
+	go tool cover -html=profiles/cover.out -o profiles/report.html
 
 lint: ## Lint source code
 	@clear
 	golangci-lint run --color=always --config=.golangci.yml ./...
+
+profiles:
+	@mkdir -p profiles
+	go test -bench=Benchmark_Parsing \
+		-cpuprofile profiles/cpu.out \
+		-memprofile profiles/mem.out
+	go tool pprof -svg go-fb2parse.test profiles/cpu.out > profiles/cpu.svg
+	go tool pprof -alloc_space -svg go-fb2parse.test profiles/mem.out > profiles/mem.svg
+	go tool pprof -alloc_objects -svg go-fb2parse.test profiles/mem.out > profiles/obj.svg
 
 ########################################################################################################################
 
@@ -58,7 +67,14 @@ docker-tests:
 
 docker-coverage:
 	docker run --rm -it -v $$(pwd):/src -w /src --entrypoint make golang:1.18 coverage
-	@echo "Read report at file://$$(pwd)/coverage/report.html"
+	@echo "Read report at file://$$(pwd)/profiles/report.html"
+
+docker-profiles:
+	docker run --rm -it -v $$(pwd):/src -w /src --entrypoint bash golang:1.18 -c "apt-get update -qq && apt-get install -y graphviz > /dev/null && make profiles"
+	@echo "Read reports at:"
+	@echo "- file://$$(pwd)/profiles/cpu.svg"
+	@echo "- file://$$(pwd)/profiles/mem.svg"
+	@echo "- file://$$(pwd)/profiles/obj.svg"
 
 docker-benchmarks:
 	docker run --rm -it -v $$(pwd):/src -w /src --entrypoint make golang:1.18 benchmarks
