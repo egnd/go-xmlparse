@@ -2,13 +2,12 @@ package fb2parse
 
 import (
 	"encoding/xml"
-	"strconv"
 )
 
 // FB2Sequence struct of fb2 sequence info.
 // http://www.fictionbook.org/index.php/Элемент_sequence
 type FB2Sequence struct {
-	Number int    `xml:"number,attr"`
+	Number string `xml:"number,attr"`
 	Name   string `xml:"name,attr"`
 }
 
@@ -19,9 +18,7 @@ func NewFB2Sequence(token xml.StartElement) (res FB2Sequence, err error) {
 		case "name":
 			res.Name = attr.Value
 		case "number":
-			if res.Number, err = strconv.Atoi(attr.Value); err != nil {
-				return
-			}
+			res.Number = attr.Value
 		}
 	}
 
