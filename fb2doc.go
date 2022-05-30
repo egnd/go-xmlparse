@@ -9,15 +9,15 @@ import (
 // FB2DocInfo struct of fb2 document info.
 // http://www.fictionbook.org/index.php/Элемент_document-info
 type FB2DocInfo struct {
-	Authors []FB2Author `xml:"author"`
+	Authors    []FB2Author `xml:"author"`
+	SrcURL     []string    `xml:"src-url"`
+	ID         []string    `xml:"id"`
+	Version    []string    `xml:"version"`
+	Publishers []FB2Author `xml:"publisher"`
 	// program-used - 0..1 (один, опционально) @TODO:
 	// date - 1 (один, обязателен) @TODO:
-	SrcURL []string `xml:"src-url"`
 	// src-ocr - 0..1 (один, опционально) @TODO:
-	ID      string `xml:"id"`
-	Version string `xml:"version"`
 	// history - 0..1 (один, опционально) @TODO:
-	Publishers []FB2Author `xml:"publisher"`
 }
 
 // NewFB2DocInfo factory for NewFB2DocInfo.
@@ -54,7 +54,7 @@ loop:
 }
 
 //nolint:forcetypeassert
-func getFB2DocInfoHandler(_ []HandlingRule) TokenHandler {
+func getFB2DocInfoHandler(_ []HandlingRule) TokenHandler { //nolint:cyclop
 	var strVal string
 
 	var author FB2Author
@@ -70,9 +70,13 @@ func getFB2DocInfoHandler(_ []HandlingRule) TokenHandler {
 				res.(*FB2DocInfo).SrcURL = append(res.(*FB2DocInfo).SrcURL, strVal)
 			}
 		case "id":
-			res.(*FB2DocInfo).ID, err = GetContent(node.Name.Local, reader)
+			if strVal, err = GetContent(node.Name.Local, reader); err == nil && strVal != "" {
+				res.(*FB2DocInfo).ID = append(res.(*FB2DocInfo).ID, strVal)
+			}
 		case "version":
-			res.(*FB2DocInfo).Version, err = GetContent(node.Name.Local, reader)
+			if strVal, err = GetContent(node.Name.Local, reader); err == nil && strVal != "" {
+				res.(*FB2DocInfo).Version = append(res.(*FB2DocInfo).Version, strVal)
+			}
 		case "publisher":
 			if author, err = NewFB2Author(node.Name.Local, reader); err == nil {
 				res.(*FB2DocInfo).Publishers = append(res.(*FB2DocInfo).Publishers, author)

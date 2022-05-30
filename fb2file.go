@@ -11,7 +11,7 @@ import (
 // http://www.fictionbook.org/index.php/Элемент_FictionBook
 // http://www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
 type FB2File struct {
-	Description FB2Description `xml:"description"`
+	Description []FB2Description `xml:"description"`
 	// Body        []FB2Body      `xml:"body"`
 	Binary []FB2Binary `xml:"binary"`
 }
@@ -47,14 +47,20 @@ loop:
 func getFB2FileHandler(rules []HandlingRule) TokenHandler {
 	var binary FB2Binary
 
+	var descr FB2Description
+
 	return func(res interface{}, node xml.StartElement, reader xml.TokenReader) (err error) {
 		switch node.Name.Local {
 		case "description":
-			res.(*FB2File).Description, err = NewFB2Description(node.Name.Local, reader, rules)
+			if descr, err = NewFB2Description(node.Name.Local, reader, rules); err == nil {
+				res.(*FB2File).Description = append(res.(*FB2File).Description, descr)
+			}
 		case "binary":
 			if binary, err = NewFB2Binary(node, reader); err == nil {
 				res.(*FB2File).Binary = append(res.(*FB2File).Binary, binary)
 			}
+		case "body":
+			err = SkipToken(node.Name.Local, reader)
 		}
 
 		return

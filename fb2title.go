@@ -9,17 +9,17 @@ import (
 // FB2TitleInfo struct of fb2 title info.
 // http://www.fictionbook.org/index.php/Элемент_title-info
 type FB2TitleInfo struct {
-	Genre      []string       `xml:"genre"`
-	Author     []FB2Author    `xml:"author"`
-	BookTitle  string         `xml:"book-title"`
-	Annotation *FB2Annotation `xml:"annotation"`
-	Keywords   string         `xml:"keywords"`
-	Date       string         `xml:"date"`
-	Coverpage  *FB2Cover      `xml:"coverpage"`
-	Lang       string         `xml:"lang"`
-	SrcLang    string         `xml:"src-lang"`
-	Translator []FB2Author    `xml:"translator"`
-	Sequence   []FB2Sequence  `xml:"sequence"`
+	Genre      []string        `xml:"genre"`
+	Author     []FB2Author     `xml:"author"`
+	BookTitle  []string        `xml:"book-title"`
+	Annotation []FB2Annotation `xml:"annotation"`
+	Keywords   []string        `xml:"keywords"`
+	Date       []string        `xml:"date"`
+	Coverpage  []FB2Cover      `xml:"coverpage"`
+	Lang       []string        `xml:"lang"`
+	SrcLang    []string        `xml:"src-lang"`
+	Translator []FB2Author     `xml:"translator"`
+	Sequence   []FB2Sequence   `xml:"sequence"`
 }
 
 // NewFB2TitleInfo factory for FB2TitleInfo.
@@ -56,12 +56,16 @@ loop:
 }
 
 //nolint:forcetypeassert
-func getFB2TitleInfoHandler(_ []HandlingRule) TokenHandler { //nolint:cyclop
+func getFB2TitleInfoHandler(_ []HandlingRule) TokenHandler { //nolint:cyclop,gocognit
 	var strVal string
 
 	var author FB2Author
 
 	var seq FB2Sequence
+
+	var annotation FB2Annotation
+
+	var cover FB2Cover
 
 	return func(res interface{}, node xml.StartElement, reader xml.TokenReader) (err error) {
 		switch node.Name.Local {
@@ -74,25 +78,33 @@ func getFB2TitleInfoHandler(_ []HandlingRule) TokenHandler { //nolint:cyclop
 				res.(*FB2TitleInfo).Author = append(res.(*FB2TitleInfo).Author, author)
 			}
 		case "book-title":
-			res.(*FB2TitleInfo).BookTitle, err = GetContent(node.Name.Local, reader)
+			if strVal, err = GetContent(node.Name.Local, reader); err == nil && strVal != "" {
+				res.(*FB2TitleInfo).BookTitle = append(res.(*FB2TitleInfo).BookTitle, strVal)
+			}
 		case "annotation":
-			var annotation FB2Annotation
 			if annotation, err = NewFB2Annotation(node.Name.Local, reader); err == nil {
-				res.(*FB2TitleInfo).Annotation = &annotation
+				res.(*FB2TitleInfo).Annotation = append(res.(*FB2TitleInfo).Annotation, annotation)
 			}
 		case "keywords":
-			res.(*FB2TitleInfo).Keywords, err = GetContent(node.Name.Local, reader)
+			if strVal, err = GetContent(node.Name.Local, reader); err == nil && strVal != "" {
+				res.(*FB2TitleInfo).Keywords = append(res.(*FB2TitleInfo).Keywords, strVal)
+			}
 		case "date":
-			res.(*FB2TitleInfo).Date, err = GetContent(node.Name.Local, reader)
+			if strVal, err = GetContent(node.Name.Local, reader); err == nil && strVal != "" {
+				res.(*FB2TitleInfo).Date = append(res.(*FB2TitleInfo).Date, strVal)
+			}
 		case "coverpage":
-			var cover FB2Cover
 			if cover, err = NewFB2Cover(node.Name.Local, reader); err == nil {
-				res.(*FB2TitleInfo).Coverpage = &cover
+				res.(*FB2TitleInfo).Coverpage = append(res.(*FB2TitleInfo).Coverpage, cover)
 			}
 		case "lang":
-			res.(*FB2TitleInfo).Lang, err = GetContent(node.Name.Local, reader)
+			if strVal, err = GetContent(node.Name.Local, reader); err == nil && strVal != "" {
+				res.(*FB2TitleInfo).Lang = append(res.(*FB2TitleInfo).Lang, strVal)
+			}
 		case "src-lang":
-			res.(*FB2TitleInfo).SrcLang, err = GetContent(node.Name.Local, reader)
+			if strVal, err = GetContent(node.Name.Local, reader); err == nil && strVal != "" {
+				res.(*FB2TitleInfo).SrcLang = append(res.(*FB2TitleInfo).SrcLang, strVal)
+			}
 		case "translator":
 			if author, err = NewFB2Author(node.Name.Local, reader); err == nil {
 				res.(*FB2TitleInfo).Translator = append(res.(*FB2TitleInfo).Translator, author)

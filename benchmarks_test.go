@@ -60,7 +60,7 @@ func Benchmark_Parsing(b *testing.B) {
 func getBenchParsingRule(next fb2parse.TokenHandler) fb2parse.TokenHandler {
 	return func(obj interface{}, node xml.StartElement, r xml.TokenReader) (err error) {
 		if _, ok := obj.(*fb2parse.FB2TitleInfo); ok && node.Name.Local == "keywords" {
-			obj.(*fb2parse.FB2TitleInfo).Keywords = "test keyword"
+			obj.(*fb2parse.FB2TitleInfo).Keywords = []string{"test keyword"}
 		}
 
 		return next(obj, node, r)

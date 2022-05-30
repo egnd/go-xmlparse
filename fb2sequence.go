@@ -2,6 +2,8 @@ package fb2parse
 
 import (
 	"encoding/xml"
+	"fmt"
+	"strconv"
 )
 
 // FB2Sequence struct of fb2 sequence info.
@@ -19,6 +21,10 @@ func NewFB2Sequence(token xml.StartElement) (res FB2Sequence, err error) {
 			res.Name = attr.Value
 		case "number":
 			res.Number = attr.Value
+
+			if num, err := strconv.Atoi(attr.Value); err == nil {
+				res.Number = fmt.Sprint(num)
+			}
 		}
 	}
 

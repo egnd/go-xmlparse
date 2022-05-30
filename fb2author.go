@@ -9,13 +9,13 @@ import (
 // FB2Author struct of fb2 author.
 // http://www.fictionbook.org/index.php/Элемент_author
 type FB2Author struct {
-	FirstName  string   `xml:"first-name"`
-	MiddleName string   `xml:"middle-name"`
-	LastName   string   `xml:"last-name"`
-	Nickname   string   `xml:"nickname"`
+	FirstName  []string `xml:"first-name"`
+	MiddleName []string `xml:"middle-name"`
+	LastName   []string `xml:"last-name"`
+	Nickname   []string `xml:"nickname"`
 	HomePage   []string `xml:"home-page"`
 	Email      []string `xml:"email"`
-	ID         string   `xml:"id"`
+	ID         []string `xml:"id"`
 }
 
 // NewFB2Author factory for FB2Author.
@@ -38,13 +38,21 @@ loop:
 		case xml.StartElement:
 			switch typedToken.Name.Local {
 			case "first-name":
-				res.FirstName, err = GetContent(typedToken.Name.Local, reader)
+				if strVal, err = GetContent(typedToken.Name.Local, reader); err == nil && strVal != "" {
+					res.FirstName = append(res.FirstName, strVal)
+				}
 			case "middle-name":
-				res.MiddleName, err = GetContent(typedToken.Name.Local, reader)
+				if strVal, err = GetContent(typedToken.Name.Local, reader); err == nil && strVal != "" {
+					res.MiddleName = append(res.MiddleName, strVal)
+				}
 			case "last-name":
-				res.LastName, err = GetContent(typedToken.Name.Local, reader)
+				if strVal, err = GetContent(typedToken.Name.Local, reader); err == nil && strVal != "" {
+					res.LastName = append(res.LastName, strVal)
+				}
 			case "nickname":
-				res.Nickname, err = GetContent(typedToken.Name.Local, reader)
+				if strVal, err = GetContent(typedToken.Name.Local, reader); err == nil && strVal != "" {
+					res.Nickname = append(res.Nickname, strVal)
+				}
 			case "home-page":
 				if strVal, err = GetContent(typedToken.Name.Local, reader); err == nil && strVal != "" {
 					res.HomePage = append(res.HomePage, strVal)
@@ -54,7 +62,9 @@ loop:
 					res.Email = append(res.Email, strVal)
 				}
 			case "id":
-				res.ID, err = GetContent(typedToken.Name.Local, reader)
+				if strVal, err = GetContent(typedToken.Name.Local, reader); err == nil && strVal != "" {
+					res.ID = append(res.ID, strVal)
+				}
 			}
 
 			if err != nil {
