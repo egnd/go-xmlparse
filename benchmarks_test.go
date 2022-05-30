@@ -33,7 +33,7 @@ func Benchmark_Decoding(b *testing.B) {
 }
 
 func Benchmark_Parsing(b *testing.B) {
-	table := []int{0, 1, 10, 100}
+	table := []int{0, 1, 10, 100, 500, 1000}
 
 	fb2data, err := getBookData("examples/big.xml")
 	if err != nil {
