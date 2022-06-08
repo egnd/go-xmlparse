@@ -1,5 +1,6 @@
-/examples/*
-!/examples/*.xml
+/fb2/examples/*
+!/fb2/examples/*.xml
 /profiles
 /*.test
+/debug*.go
 .DS_Store
