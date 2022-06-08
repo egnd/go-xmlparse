@@ -2,7 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/egnd/go-xmlparse.svg)](https://pkg.go.dev/github.com/egnd/go-xmlparse)
 [![Go Report Card](https://goreportcard.com/badge/github.com/egnd/go-xmlparse)](https://goreportcard.com/report/github.com/egnd/go-xmlparse)
-[![Coverage](https://gocover.io/_badge/github.com/egnd/go-xmlparse?cachefix1)](https://gocover.io/github.com/egnd/go-xmlparse)
+[![Coverage](https://gocover.io/_badge/github.com/egnd/go-xmlparse?cachefix2)](https://gocover.io/github.com/egnd/go-xmlparse)
 [![Pipeline](https://github.com/egnd/go-xmlparse/actions/workflows/pipeline.yml/badge.svg)](https://github.com/egnd/go-xmlparse/actions?query=workflow%3APipeline)
 
 Golang package for parsing xml data.
