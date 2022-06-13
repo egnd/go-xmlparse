@@ -55,3 +55,34 @@ func Test_Author(t *testing.T) {
 		})
 	}
 }
+
+func Test_Author_String(t *testing.T) {
+	cases := []struct {
+		item fb2.Author
+		res  string
+	}{
+		{
+			res: "last first middle (nick)",
+			item: fb2.Author{
+				FirstName:  []string{"", "first"},
+				MiddleName: []string{"middle"},
+				LastName:   []string{"", "last"},
+				Nickname:   []string{"nick"},
+			},
+		},
+		{
+			res: "",
+		},
+		{
+			res: "nick",
+			item: fb2.Author{
+				Nickname: []string{"nick"},
+			},
+		},
+	}
+	for k, test := range cases {
+		t.Run(fmt.Sprint(k+1), func(t *testing.T) {
+			assert.EqualValues(t, test.res, test.item.String())
+		})
+	}
+}

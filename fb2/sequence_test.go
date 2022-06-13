@@ -32,3 +32,30 @@ func Test_NewSequence(t *testing.T) {
 		})
 	}
 }
+
+func Test_Sequence_String(t *testing.T) {
+	cases := []struct {
+		item fb2.Sequence
+		res  string
+	}{
+		{
+			res:  "name (num)",
+			item: fb2.Sequence{Number: "num", Name: "name"},
+		},
+		{
+			res:  "name (num)",
+			item: fb2.Sequence{Number: "num", Name: "name,"},
+		},
+		{
+			item: fb2.Sequence{Name: ","},
+		},
+		{
+			res: "",
+		},
+	}
+	for k, test := range cases {
+		t.Run(fmt.Sprint(k+1), func(t *testing.T) {
+			assert.EqualValues(t, test.res, test.item.String())
+		})
+	}
+}

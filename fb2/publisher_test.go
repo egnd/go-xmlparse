@@ -42,3 +42,32 @@ func Test_NewPublisher(t *testing.T) {
 		})
 	}
 }
+
+func Test_Publisher_String(t *testing.T) {
+	cases := []struct {
+		item fb2.Publisher
+		res  string
+	}{
+		{
+			res: "publ (city)",
+			item: fb2.Publisher{
+				Publisher: []string{"", "publ"},
+				City:      []string{"city"},
+			},
+		},
+		{
+			res: "",
+		},
+		{
+			res: "city",
+			item: fb2.Publisher{
+				City: []string{"city"},
+			},
+		},
+	}
+	for k, test := range cases {
+		t.Run(fmt.Sprint(k+1), func(t *testing.T) {
+			assert.EqualValues(t, test.res, test.item.String())
+		})
+	}
+}
