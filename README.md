@@ -5,6 +5,8 @@
 [![Coverage](https://gocover.io/_badge/github.com/egnd/go-xmlparse?cachefix2)](https://gocover.io/github.com/egnd/go-xmlparse)
 [![Pipeline](https://github.com/egnd/go-xmlparse/actions/workflows/pipeline.yml/badge.svg)](https://github.com/egnd/go-xmlparse/actions?query=workflow%3APipeline)
 
+DEPRECATED user https://github.com/egnd/go-toolbox/tree/master/xmlparse instead
+
 Golang package for parsing xml data.
 
 ## Examples:
